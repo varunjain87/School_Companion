@@ -55,19 +55,31 @@ const curriculumQAFlow = ai.defineFlow(
   },
   async (input) => {
     
-    const [answer, image] = await Promise.all([
-      answerQuestionPrompt({
-        question: input.question,
-      }),
-      ai.generate({
+    // First, get the text answer.
+    const answer = await answerQuestionPrompt({
+      question: input.question,
+    });
+
+    if (!answer.output) {
+      throw new Error("Failed to generate a text answer.");
+    }
+
+    let imageUrl: string | undefined = undefined;
+    try {
+      // After getting the answer, try to generate an image.
+      const image = await ai.generate({
         model: 'googleai/imagen-4.0-fast-generate-001',
         prompt: `A simple, educational, and kid-friendly visual representation of: ${input.question}`,
-      }),
-    ]);
+      });
+      imageUrl = image.media?.url;
+    } catch (e) {
+      // If image generation fails, we log it but don't block the response.
+      console.error("Image generation failed, but returning text answer.", e);
+    }
     
     return {
-        ...answer.output!,
-        imageUrl: image.media?.url,
+        ...answer.output,
+        imageUrl,
     };
   }
 );
