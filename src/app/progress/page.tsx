@@ -1,11 +1,12 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useProgress } from '@/hooks/use-progress';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Flame, Trash2, CheckCircle, Circle, Brain, BookCopy, Mail, Loader2 } from 'lucide-react';
+import { Flame, Trash2, CheckCircle, Circle, Brain, BookCopy, Mail, Loader2, HelpCircle } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +21,7 @@ import {
 import { getAiSummary } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import type { Message } from '@/components/chat-message';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 const suggestedConcepts = [
@@ -32,15 +34,27 @@ export default function ProgressPage() {
     const { progress, resetProgress, streakData, streak } = useProgress();
     const { toast } = useToast();
     const [isSummarizing, setIsSummarizing] = useState(false);
+    const [userQuestions, setUserQuestions] = useState<string[]>([]);
+
+    useEffect(() => {
+        try {
+            const item = window.sessionStorage.getItem('chatMessages');
+            const messages: Message[] = item ? JSON.parse(item) : [];
+            const questions = messages.filter(m => m.role === 'user').map(m => m.content);
+            setUserQuestions(questions);
+        } catch (error) {
+            console.error("Could not read questions from session storage", error);
+        }
+    }, []);
 
     const handleSendSummary = async () => {
         setIsSummarizing(true);
         try {
             const item = window.sessionStorage.getItem('chatMessages');
             const messages: Message[] = item ? JSON.parse(item) : [];
-            const userQuestions = messages.filter(m => m.role === 'user').map(m => m.content);
+            const questionsToSummarize = messages.filter(m => m.role === 'user').map(m => m.content);
 
-            if (userQuestions.length === 0) {
+            if (questionsToSummarize.length === 0) {
                 toast({
                     title: "No Activity",
                     description: "No questions have been asked yet today.",
@@ -48,7 +62,7 @@ export default function ProgressPage() {
                 return;
             }
             
-            const result = await getAiSummary(userQuestions);
+            const result = await getAiSummary(questionsToSummarize);
 
             if (result.success) {
                 toast({
@@ -172,6 +186,31 @@ export default function ProgressPage() {
                                 </li>
                             ))}
                         </ul>
+                    </CardContent>
+                </Card>
+
+                <Card className="lg:col-span-3">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <HelpCircle />
+                            Today's Questions
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {userQuestions.length > 0 ? (
+                             <ScrollArea className="h-48">
+                                <ul className="space-y-3 pr-4">
+                                    {userQuestions.map((question, index) => (
+                                        <li key={index} className="flex items-start gap-3 text-sm">
+                                           <span className="font-semibold text-muted-foreground">{index + 1}.</span>
+                                           <span>{question}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </ScrollArea>
+                        ) : (
+                            <p className="text-muted-foreground text-center py-8">You haven't asked any questions yet today. Go to the 'Learn' tab to start!</p>
+                        )}
                     </CardContent>
                 </Card>
             </div>
