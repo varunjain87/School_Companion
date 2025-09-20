@@ -15,6 +15,14 @@ export type Message = {
 
 export function ChatMessage({ message }: { message: Message }) {
   const isUser = message.role === 'user';
+
+  const formattedContent = message.content
+    .split('\n')
+    .filter(part => part.trim() !== '')
+    .map((part, index) => (
+        <p key={index} className="mb-2 last:mb-0" dangerouslySetInnerHTML={{ __html: part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+    ));
+
   return (
     <div className={cn("flex items-start gap-3", isUser ? "justify-end" : "")}>
       {!isUser && (
@@ -30,7 +38,12 @@ export function ChatMessage({ message }: { message: Message }) {
           ? "bg-primary text-primary-foreground" 
           : "bg-card"
       )}>
-        <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+        {isUser ? (
+             <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+        ) : (
+            <div className="leading-relaxed">{formattedContent}</div>
+        )}
+       
         {message.imageUrl && (
             <div className="mt-4">
                 <Image
