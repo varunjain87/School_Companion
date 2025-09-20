@@ -25,9 +25,9 @@ export async function askQuestion(question: string, history: string[] = []): Pro
     }
 }
 
-export async function getAiTranslation(input: TranslateTextInput): Promise<{ success: boolean; data?: TranslateTextOutput; error?: string}> {
+export async function getAiTranslation(query: string): Promise<{ success: boolean; data?: TranslateTextOutput; error?: string}> {
     try {
-        const result = await translateTextFlow(input);
+        const result = await translateTextFlow({ query });
         return { success: true, data: result };
     } catch (error) {
         console.error(error);

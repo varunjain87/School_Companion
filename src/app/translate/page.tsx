@@ -4,61 +4,39 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRightLeft, Download, Languages, Loader2, Volume2, WifiOff } from "lucide-react";
+import { Download, Languages, Loader2, Volume2, WifiOff } from "lucide-react";
 import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useToast } from '@/hooks/use-toast';
 import { getAiTranslation } from '@/app/actions';
+import type { TranslateTextOutput } from '@/ai/flows/translate-text';
 
-const phrasebook = [
-    { en: "Good morning, teacher.", kn: "ಶುಭೋದಯ, ಶಿಕ್ಷಕ/ಶಿಕ್ಷಕಿ." },
-    { en: "May I come in?", kn: "ನಾನು ಒಳಗೆ ಬರಬಹುದೇ?" },
-    { en: "Please explain this again.", kn: "ದಯವಿಟ್ಟು ಇದನ್ನು ಮತ್ತೆ ವಿವರಿಸಿ." },
-    { en: "I have a doubt.", kn: "ನನಗೊಂದು ಸಂದೇಹವಿದೆ." },
-    { en: "Thank you.", kn: "ಧನ್ಯವಾದಗಳು." },
-];
+const sampleQuery = "How do you say 'Thank you' in Kannada?";
 
 export default function TranslatePage() {
-    const [sourceLang, setSourceLang] = useState<'en' | 'kn'>('en');
-    const [sourceText, setSourceText] = useState('');
-    const [translatedText, setTranslatedText] = useState('');
-    const [translatedAudio, setTranslatedAudio] = useState<string | null>(null);
+    const [query, setQuery] = useState('');
+    const [translationResult, setTranslationResult] = useState<TranslateTextOutput | null>(null);
     const [isModelDownloaded, setIsModelDownloaded] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
 
-    const targetLang = sourceLang === 'en' ? 'kn' : 'en';
-    const targetLangName = sourceLang === 'en' ? 'Kannada' : 'English';
-
-    const handleTranslate = async () => {
+    const handleTranslate = async (text?: string) => {
+        const textToTranslate = text || query;
         if (!isModelDownloaded) {
-             toast({ title: "Model not downloaded", description: `Please download the ${targetLangName} model for offline translation.`, variant: "destructive"});
+             toast({ title: "Model not downloaded", description: `Please download the Kannada model for offline translation.`, variant: "destructive"});
              return;
         }
-        if (!sourceText.trim()) {
-            setTranslatedText('');
-            setTranslatedAudio(null);
+        if (!textToTranslate.trim()) {
+            setTranslationResult(null);
             return;
         }
 
         setIsLoading(true);
-        setTranslatedText('');
-        setTranslatedAudio(null);
+        setTranslationResult(null);
 
-        const result = await getAiTranslation({ text: sourceText, sourceLang, targetLang });
+        const result = await getAiTranslation(textToTranslate);
 
         if (result.success && result.data) {
-            setTranslatedText(result.data.translatedText);
-            if (result.data.audioDataUri) {
-                setTranslatedAudio(result.data.audioDataUri);
-            }
+            setTranslationResult(result.data);
         } else {
             toast({ title: "Translation Failed", description: result.error, variant: "destructive" });
         }
@@ -67,7 +45,7 @@ export default function TranslatePage() {
     };
     
     const handleDownload = () => {
-        toast({ title: "Downloading...", description: `${targetLangName} language model is being downloaded.`});
+        toast({ title: "Downloading...", description: `Kannada language model is being downloaded.`});
         setIsLoading(true);
         setTimeout(() => {
             setIsModelDownloaded(true);
@@ -76,28 +54,16 @@ export default function TranslatePage() {
         }, 1500);
     }
 
-    const toggleLanguage = () => {
-        setSourceLang(targetLang);
-        const currentSource = sourceText;
-        setSourceText(translatedText);
-        setTranslatedText(currentSource);
-        setTranslatedAudio(null);
-    };
-
-    const handlePhrasebookClick = (phrase: {en: string, kn: string}) => {
-        if(sourceLang === 'en') {
-            setSourceText(phrase.en);
-        } else {
-            setSourceText(phrase.kn);
-        }
-        handleTranslate();
-    };
-
     const playAudio = () => {
-        if (translatedAudio) {
-            const audio = new Audio(translatedAudio);
+        if (translationResult?.audioDataUri) {
+            const audio = new Audio(translationResult.audioDataUri);
             audio.play();
         }
+    }
+    
+    const handleSample = () => {
+        setQuery(sampleQuery);
+        handleTranslate(sampleQuery);
     }
 
     return (
@@ -113,86 +79,71 @@ export default function TranslatePage() {
                     </Badge>
                 ) : (
                      <Button onClick={handleDownload} disabled={isLoading}>
-                        <Download className="mr-2 h-4 w-4" /> Download {targetLangName} Model
+                        <Download className="mr-2 h-4 w-4" /> Download Kannada Model
                     </Button>
                 )}
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>{sourceLang === 'en' ? 'English' : 'Kannada'}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Textarea 
-                            value={sourceText} 
-                            onChange={(e) => setSourceText(e.target.value)} 
-                            placeholder="Enter text to translate..."
-                            className="h-32"
-                            disabled={!isModelDownloaded || isLoading}
-                        />
-                    </CardContent>
-                </Card>
-                <Card className="relative">
-                    <CardHeader>
-                        <CardTitle>{targetLangName}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                         {isLoading ? (
-                            <div className="flex items-center justify-center h-32">
-                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                            </div>
-                        ) : (
-                            <Textarea 
-                                value={translatedText} 
-                                readOnly 
-                                placeholder="Translation will appear here."
-                                className="h-32 bg-muted/50"
-                            />
-                        )}
-                    </CardContent>
-                    {translatedAudio && !isLoading && (
-                        <Button variant="ghost" size="icon" className="absolute top-4 right-4" onClick={playAudio}>
-                            <Volume2 />
-                        </Button>
-                    )}
-                </Card>
-            </div>
-            
-            <div className="my-4 flex justify-center items-center gap-4">
-                 <Button onClick={handleTranslate} disabled={!isModelDownloaded || isLoading || !sourceText.trim()}>
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Languages className="mr-2 h-4 w-4" />}
-                    Translate
-                </Button>
-                <Button variant="ghost" size="icon" onClick={toggleLanguage} disabled={!isModelDownloaded || isLoading} aria-label="Swap languages">
-                    <ArrowRightLeft />
-                </Button>
-            </div>
-
-            <Card className="mt-8">
+            <Card className="mb-4">
                 <CardHeader>
-                    <CardTitle>Classroom Phrasebook</CardTitle>
-                    <CardDescription>Click a phrase to translate it.</CardDescription>
+                    <CardTitle>Your Question</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>English</TableHead>
-                                <TableHead>Kannada (ಕನ್ನಡ)</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {phrasebook.map((phrase, index) => (
-                                <TableRow key={index} className="cursor-pointer hover:bg-muted/50" onClick={() => handlePhrasebookClick(phrase)}>
-                                    <TableCell>{phrase.en}</TableCell>
-                                    <TableCell>{phrase.kn}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                    <div className="space-y-4">
+                        <Textarea 
+                            value={query} 
+                            onChange={(e) => setQuery(e.target.value)} 
+                            placeholder="e.g., How to say 'Good morning' in Kannada?"
+                            className="h-24"
+                            disabled={!isModelDownloaded || isLoading}
+                        />
+                        <div className="flex flex-wrap gap-2">
+                            <Button onClick={() => handleTranslate()} disabled={!isModelDownloaded || isLoading || !query.trim()}>
+                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Languages className="mr-2 h-4 w-4" />}
+                                Translate
+                            </Button>
+                            <Button variant="outline" onClick={handleSample} disabled={!isModelDownloaded || isLoading}>
+                                Try a sample
+                            </Button>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
+
+            {isLoading && (
+                <Card className="flex items-center justify-center p-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    <p className="ml-4">Translating...</p>
+                </Card>
+            )}
+
+            {translationResult && (
+                <div className="grid md:grid-cols-2 gap-4">
+                     <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle>Kannada (ಕನ್ನಡ)</CardTitle>
+                             {translationResult.audioDataUri && (
+                                <Button variant="ghost" size="icon" onClick={playAudio}>
+                                    <Volume2 />
+                                </Button>
+                            )}
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-kannada">{translationResult.translatedText}</p>
+                            <p className="text-sm text-muted-foreground mt-2">Original: "{translationResult.sourceText}"</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Pronunciation</CardTitle>
+                            <CardDescription>How to say it in English characters.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-xl font-semibold text-accent-foreground">{translationResult.pronunciation}</p>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
         </div>
     );
 }

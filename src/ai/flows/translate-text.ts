@@ -13,14 +13,14 @@ import {z} from 'genkit';
 import wav from 'wav';
 
 const TranslateTextInputSchema = z.object({
-  text: z.string().describe('The text to be translated.'),
-  sourceLang: z.string().describe('The source language of the text.'),
-  targetLang: z.string().describe('The target language for the translation.'),
+  query: z.string().describe('The natural language query for translation, e.g., "How do I say \'Good morning\' in Kannada?"'),
 });
 export type TranslateTextInput = z.infer<typeof TranslateTextInputSchema>;
 
 const TranslateTextOutputSchema = z.object({
-  translatedText: z.string().describe('The translated text.'),
+  sourceText: z.string().describe('The original text that was translated.'),
+  translatedText: z.string().describe('The translated text in the target language.'),
+  pronunciation: z.string().describe('The romanized pronunciation of the translated text.'),
   audioDataUri: z.string().optional().describe('The audio of the translated text as a data URI.'),
 });
 export type TranslateTextOutput = z.infer<typeof TranslateTextOutputSchema>;
@@ -34,12 +34,29 @@ export async function translateText(
 const translatePrompt = ai.definePrompt({
   name: 'translatePrompt',
   input: {schema: TranslateTextInputSchema},
-  output: {schema: z.object({translatedText: z.string()})},
-  prompt: `Translate the following text from {{sourceLang}} to {{targetLang}}:
+  output: {schema: z.object({
+    sourceText: z.string().describe("The text phrase that the user wants to translate."),
+    translatedText: z.string().describe("The translation of the phrase into Kannada."),
+    pronunciation: z.string().describe("A romanized, phonetic spelling of the Kannada translation to help with pronunciation."),
+  })},
+  prompt: `You are a language tutor specializing in English and Kannada. A user has asked a question to learn how to say something in Kannada.
 
-Text: {{{text}}}
+Your tasks are:
+1.  Identify the specific English phrase the user wants to translate from their question.
+2.  Translate that phrase accurately into Kannada.
+3.  Provide a simple, romanized (English alphabet) phonetic spelling for the Kannada translation.
 
-Translation:`,
+**User's Question:**
+"{{{query}}}"
+
+**Example:**
+If the user asks: "how to say 'good morning' in kannada"
+Your output should be:
+- sourceText: "good morning"
+- translatedText: "ಶುಭೋದಯ"
+- pronunciation: "shubhodaya"
+
+Provide your response in the requested structured format.`,
 });
 
 async function toWav(
@@ -107,7 +124,7 @@ const translateTextFlow = ai.defineFlow(
     }
 
     return {
-      translatedText: translation.translatedText,
+      ...translation,
       audioDataUri,
     };
   }
