@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, CornerDownLeft, Sparkles, Loader2 } from 'lucide-react';
+import { Send, CornerDownLeft, Sparkles, Loader2, Trash2 } from 'lucide-react';
 import { ChatMessage, Message } from '@/components/chat-message';
 import { askQuestion } from '@/app/actions';
 import { Badge } from '@/components/ui/badge';
@@ -109,6 +109,19 @@ export default function LearnPage() {
     handleSubmit(undefined, prompt);
   };
 
+  const handleResetChat = () => {
+    setMessages([]);
+    try {
+      window.sessionStorage.removeItem('chatMessages');
+    } catch (error) {
+      console.error("Could not remove chat messages from session storage", error);
+    }
+    toast({
+      title: "Chat Cleared",
+      description: "The conversation has been reset.",
+    });
+  };
+
   const togglePedagogy = () => {
     setPedagogyMode(prev => prev === 'direct' ? 'socratic' : 'direct');
     toast({
@@ -128,6 +141,12 @@ export default function LearnPage() {
             <Button variant="outline" size="sm" onClick={togglePedagogy} aria-label="Flip pedagogy mode">
               Flip Pedagogy
             </Button>
+            {messages.length > 0 && (
+              <Button variant="outline" size="sm" onClick={handleResetChat} aria-label="Reset chat">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Reset Chat
+              </Button>
+            )}
             <Badge variant="outline">Pedagogy: <span className="capitalize font-semibold ml-1">{pedagogyMode}</span></Badge>
           </div>
         </div>
