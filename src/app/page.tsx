@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
@@ -141,52 +142,52 @@ export default function LearnPage() {
         </div>
 
       <Card className="flex flex-col flex-1 overflow-hidden">
-        <CardContent className="flex flex-col p-0 flex-1">
-          <ScrollArea className="flex-grow p-4" ref={scrollAreaRef}>
-            <div className="space-y-6">
-              {messages.length === 0 && !isLoading && (
-                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
-                  <Sparkles className="h-12 w-12 mb-4 text-primary" />
-                  <h2 className="text-lg font-semibold">Start your learning journey</h2>
-                  <p className="max-w-sm">Ask a question or try one of the examples below.</p>
-                </div>
-              )}
-              {messages.map((msg, index) => (
-                <ChatMessage key={index} message={msg} />
-              ))}
-              {isLoading && (
-                 <ChatMessage message={{role: 'assistant', content: 'Thinking...'}} />
-              )}
-            </div>
-          </ScrollArea>
-          
-          <div className="border-t p-4 bg-background/50">
-            <div className="mb-2 flex flex-wrap gap-2">
-              {samplePrompts.map(p => (
-                <Button key={p.title} variant="outline" size="sm" onClick={() => handlePromptClick(p.prompt)} disabled={isLoading}>
-                  Try: "{p.title}"
-                </Button>
-              ))}
-            </div>
-            <form onSubmit={handleSubmit} className="relative">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about math, science, social studies..."
-                className="pr-12"
-                disabled={isLoading}
-              />
-              <Button type="submit" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" disabled={isLoading || !input.trim()}>
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                <span className="sr-only">Send</span>
-              </Button>
-            </form>
-            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                <CornerDownLeft className="h-3 w-3" />
-                Press Enter to send.
-            </p>
-          </div>
+        <CardContent className="flex-grow p-4">
+            <ScrollArea className="h-full" ref={scrollAreaRef}>
+              <div className="space-y-6 pr-4">
+                {messages.length === 0 && !isLoading && (
+                  <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
+                    <Sparkles className="h-12 w-12 mb-4 text-primary" />
+                    <h2 className="text-lg font-semibold">Start your learning journey</h2>
+                    <p className="max-w-sm">Ask a question or try one of the examples below.</p>
+                  </div>
+                )}
+                {messages.map((msg, index) => (
+                  <ChatMessage key={index} message={msg} />
+                ))}
+                {isLoading && (
+                   <ChatMessage message={{role: 'assistant', content: 'Thinking...'}} />
+                )}
+              </div>
+            </ScrollArea>
         </CardContent>
+          
+        <div className="border-t p-4 bg-background/50">
+          <div className="mb-2 flex flex-wrap gap-2">
+            {samplePrompts.map(p => (
+              <Button key={p.title} variant="outline" size="sm" onClick={() => handlePromptClick(p.prompt)} disabled={isLoading}>
+                Try: "{p.title}"
+              </Button>
+            ))}
+          </div>
+          <form onSubmit={handleSubmit} className="relative">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask about math, science, social studies..."
+              className="pr-12"
+              disabled={isLoading}
+            />
+            <Button type="submit" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" disabled={isLoading || !input.trim()}>
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              <span className="sr-only">Send</span>
+            </Button>
+          </form>
+          <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+              <CornerDownLeft className="h-3 w-3" />
+              Press Enter to send.
+          </p>
+        </div>
       </Card>
     </div>
   );
