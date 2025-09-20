@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from 'react';
-import Image from 'next/image';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,9 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, CornerDownLeft, Sparkles, Loader2, Trash2 } from 'lucide-react';
 import { ChatMessage, Message } from '@/components/chat-message';
 import { askQuestion } from '@/app/actions';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { useProgress } from '@/hooks/use-progress';
 import { sampleNotes } from '@/lib/sample-curriculum';
 
 const getInitialMessages = (): Message[] => {
@@ -33,11 +30,9 @@ export default function LearnPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [pedagogyMode, setPedagogyMode] = useState('direct'); // Mocking remote config
   const [samplePrompts, setSamplePrompts] = useState<SamplePrompt[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const { progress } = useProgress();
 
   useEffect(() => {
     // Generate sample prompts on the client side to avoid hydration mismatch
@@ -85,7 +80,7 @@ export default function LearnPage() {
     setInput('');
     setIsLoading(true);
 
-    const result = await askQuestion(userMessageContent, progress.chaptersPracticed);
+    const result = await askQuestion(userMessageContent);
     
     if (result.success && result.data) {
         const assistantMessage: Message = { 
@@ -128,32 +123,20 @@ export default function LearnPage() {
     });
   };
 
-  const togglePedagogy = () => {
-    setPedagogyMode(prev => prev === 'direct' ? 'socratic' : 'direct');
-    toast({
-      title: "Pedagogy Mode Changed",
-      description: `Switched to ${pedagogyMode === 'direct' ? 'Socratic' : 'Direct'} style.`,
-    })
-  };
-
   return (
-    <div className="flex flex-col h-[calc(100svh-var(--header-height,4rem)-1rem)] md:h-[calc(100vh-var(--header-height,0px)-3rem)]">
+    <div className="flex flex-col h-[calc(100dvh-5rem)] md:h-auto md:min-h-[calc(100vh-3rem-2px)]">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold font-headline">Ask me anything</h1>
             <p className="text-muted-foreground">Ask anything about your studies</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={togglePedagogy} aria-label="Flip pedagogy mode">
-              Flip Pedagogy
-            </Button>
             {messages.length > 0 && (
               <Button variant="outline" size="sm" onClick={handleResetChat} aria-label="Reset chat">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Reset Chat
               </Button>
             )}
-            <Badge variant="outline">Pedagogy: <span className="capitalize font-semibold ml-1">{pedagogyMode}</span></Badge>
           </div>
         </div>
 
