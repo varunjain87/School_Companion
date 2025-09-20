@@ -14,6 +14,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { sampleNotes } from '@/lib/sample-curriculum';
 
 const CurriculumQuestionInputSchema = z.object({
   question: z.string().describe('The question to be answered.'),
@@ -54,7 +55,7 @@ Concepts:`,
 
 const retrieveNotes = ai.defineTool({
   name: 'retrieveNotes',
-  description: 'Retrieves relevant notes from Firestore based on subject, class level, chapter, and concepts.',
+  description: 'Retrieves relevant notes from a local sample curriculum based on subject, class level, chapter, and concepts.',
   inputSchema: z.object({
     subject: z.string().describe('The subject of the notes.'),
     classLevel: z.number().describe('The class level of the notes.'),
@@ -66,9 +67,20 @@ const retrieveNotes = ai.defineTool({
     content: z.string(),
   })),
 }, async (input) => {
-  // TODO: Implement the retrieval of notes from Firestore
-  // For now, return an empty array
-  return [];
+  const lowerCaseConcepts = input.concepts.map(c => c.toLowerCase());
+  const lowerCaseChapter = input.chapter.toLowerCase();
+  
+  const relevantNotes = sampleNotes.filter(note => {
+    const noteConcepts = note.concepts.map(c => c.toLowerCase());
+    const chapterMatch = note.chapter.toLowerCase().includes(lowerCaseChapter);
+    const classMatch = note.classLevel === input.classLevel;
+    const subjectMatch = note.subject.toLowerCase() === input.subject.toLowerCase();
+    const conceptsMatch = lowerCaseConcepts.some(concept => noteConcepts.includes(concept));
+
+    return subjectMatch && classMatch && (chapterMatch || conceptsMatch);
+  });
+
+  return relevantNotes.map(({ id, content }) => ({ id, content }));
 });
 
 const answerQuestionPrompt = ai.definePrompt({
@@ -86,7 +98,7 @@ const answerQuestionPrompt = ai.definePrompt({
   })},
   prompt: `You are a helpful assistant for CBSE classes 5-7.
 Answer the question based on the provided notes. Cite the note IDs where the information was found.
-If the notes are empty, answer the question from your own knowledge.
+If the notes are empty or do not contain the answer, answer the question from your own knowledge but state that it is from general knowledge.
 
 Question: {{{question}}}
 {{#if notes}}
