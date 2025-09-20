@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRightLeft, Download, Wifi, WifiOff } from "lucide-react";
+import { ArrowRightLeft, Download, Wifi, WifiOff, Languages } from "lucide-react";
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -44,7 +44,11 @@ export default function TranslatePage() {
              toast({ title: "Model not downloaded", description: "Please download the Kannada model for offline translation.", variant: "destructive"});
              return;
         }
-        setTranslatedText(dictionary[sourceText.toLowerCase()] || "Translation not available in this demo.");
+        if (!sourceText.trim()) {
+            setTranslatedText('');
+            return;
+        }
+        setTranslatedText(dictionary[sourceText.toLowerCase().trim()] || "Translation not available in this demo.");
     };
     
     const handleDownload = () => {
@@ -125,6 +129,10 @@ export default function TranslatePage() {
             </div>
             
             <div className="my-4 flex justify-center items-center gap-4">
+                 <Button onClick={handleTranslate} disabled={!isModelDownloaded}>
+                    <Languages className="mr-2 h-4 w-4" />
+                    Translate
+                </Button>
                 <Button variant="ghost" size="icon" onClick={toggleLanguage} disabled={!isModelDownloaded} aria-label="Swap languages">
                     <ArrowRightLeft />
                 </Button>
