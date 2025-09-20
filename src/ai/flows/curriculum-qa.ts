@@ -1,11 +1,6 @@
 'use server';
 
 /**
- * @fileOverview Implements a curriculum-locked Q&A flow for CBSE Classes 5-7.
- *
- * This flow classifies user prompts, retrieves relevant notes from Firestore,
- * generates answers grounded in those notes, and provides source citations.
- *
  * @fileOverview A curriculum-locked question answering AI agent.
  * - askCurriculumQuestion - A function that handles the question answering process.
  * - CurriculumQuestionInput - The input type for the askCurriculumQuestion function.
@@ -14,7 +9,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { sampleNotes, type CurriculumNote } from '@/lib/sample-curriculum';
 
 const CurriculumQuestionInputSchema = z.object({
   question: z.string().describe('The question to be answered.'),
