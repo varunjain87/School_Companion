@@ -67,12 +67,9 @@ export default function MathPage() {
         onSubmit({ problem: sampleProblem });
     };
 
-    const formattedExplanation = explanation?.explanation.split(/(\d\.\s*\*.*?\*)/g).filter(Boolean).map((part, index) => {
-        if (part.match(/\d\.\s*\*.*?\*/)) {
-            return <p key={index} className="font-bold my-2">{part}</p>;
-        }
-        return <p key={index}>{part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>;
-    });
+    const formattedExplanation = explanation?.explanation.split(/\n(?=\d\.\s)/g).map((part, index) => (
+        <p key={index} className="mb-2">{part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>
+    ));
 
     return (
         <div>
