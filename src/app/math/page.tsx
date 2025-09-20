@@ -12,6 +12,7 @@ import { useForm } from 'react-hook-form';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Explanation = {
     explanation: string;
@@ -134,7 +135,9 @@ export default function MathPage() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-sm max-w-none leading-relaxed">{formattedExplanation}</div>
+                                    <ScrollArea className="h-72">
+                                        <div className="text-sm max-w-none leading-relaxed pr-4">{formattedExplanation}</div>
+                                    </ScrollArea>
                                 </CardContent>
                             </Card>
                             <Card>
