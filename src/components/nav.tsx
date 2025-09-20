@@ -34,14 +34,16 @@ export function AppNav() {
       {navLinks.map((link) => (
         <SidebarMenuItem key={link.href}>
           <SidebarMenuButton
-            as={Link}
+            asChild
             href={link.href}
             isActive={pathname === link.href}
             onClick={handleClick}
             tooltip={{ children: link.tooltip }}
           >
-            <link.icon />
-            <span>{link.label}</span>
+            <Link href={link.href}>
+              <link.icon />
+              <span>{link.label}</span>
+            </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
       ))}
