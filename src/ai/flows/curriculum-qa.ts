@@ -126,6 +126,7 @@ const curriculumQAFlow = ai.defineFlow(
     } catch (e) {
       // If image generation fails, we log it but don't block the response.
       console.error("Image generation failed, but returning text answer.", e);
+      imageUrl = undefined;
     }
     
     return {
