@@ -36,7 +36,13 @@ const prompt = ai.definePrompt({
   input: {schema: ExplainMathProblemInputSchema},
   output: {schema: ExplainMathProblemOutputSchema},
   prompt: `You are a math tutor for a 6th grader. A student has asked you a question.
-Your goal is to provide a clear, simple, step-by-step solution. Avoid long paragraphs. Use a numbered list for steps.
+Your goal is to provide a clear, simple, step-by-step solution.
+
+**IMPORTANT INSTRUCTIONS:**
+- Your response MUST be a numbered list.
+- Each step in the list MUST be on a new line. Use "\\n\\n" to separate steps.
+- Do NOT use long paragraphs. Keep explanations for each step to one or two short sentences.
+- Use bold formatting for important terms or numbers.
 
 Here is the user's question:
 "{{{question}}}"

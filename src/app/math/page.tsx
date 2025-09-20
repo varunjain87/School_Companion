@@ -67,9 +67,12 @@ export default function MathPage() {
         onSubmit({ problem: sampleProblem });
     };
 
-    const formattedExplanation = explanation?.explanation.split(/\n(?=\d\.\s)/g).map((part, index) => (
-        <p key={index} className="mb-2">{part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>
-    ));
+    const formattedExplanation = explanation?.explanation
+        .split('\n')
+        .filter(part => part.trim() !== '')
+        .map((part, index) => (
+            <p key={index} className="mb-2" dangerouslySetInnerHTML={{ __html: part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+        ));
 
     return (
         <div>
@@ -131,7 +134,7 @@ export default function MathPage() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-sm max-w-none whitespace-pre-wrap leading-relaxed">{formattedExplanation}</div>
+                                    <div className="text-sm max-w-none leading-relaxed">{formattedExplanation}</div>
                                 </CardContent>
                             </Card>
                             <Card>
