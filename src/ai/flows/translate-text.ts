@@ -31,27 +31,16 @@ export async function translateText(
   return translateTextFlow(input);
 }
 
-const profanityCheckerTool = ai.defineTool(
-  {
-    name: 'profanityChecker',
-    description:
-      'Checks if the input contains profanity or harmful content. Returns true if it does, false otherwise.',
-    inputSchema: z.object({
-      text: z.string(),
-    }),
-    outputSchema: z.boolean(),
-  },
-  async (input) => {
-    const llmResponse = await ai.generate({
-      prompt: `Is the following text inappropriate, hateful, sexually explicit, or profane? Respond with only "true" or "false". Text: "${input.text}"`,
-      config: {
-        temperature: 0,
-      },
-    });
+async function profanityChecker(text: string): Promise<boolean> {
+  const llmResponse = await ai.generate({
+    prompt: `Is the following text inappropriate, hateful, sexually explicit, or profane? Respond with only "true" or "false". Text: "${text}"`,
+    config: {
+      temperature: 0,
+    },
+  });
 
-    return llmResponse.text.toLowerCase().includes('true');
-  }
-);
+  return llmResponse.text.toLowerCase().includes('true');
+}
 
 
 const translatePrompt = ai.definePrompt({
@@ -59,18 +48,15 @@ const translatePrompt = ai.definePrompt({
   input: {schema: TranslateTextInputSchema},
   output: {schema: z.object({
     sourceText: z.string().describe("The text phrase that the user wants to translate."),
-    translatedText: z.string().describe("The translation of the phrase into Kannada. If the input is inappropriate, return 'I am unable to process this request.'"),
-    pronunciation: z.string().describe("A romanized, phonetic spelling of the Kannada translation to help with pronunciation. If the input is inappropriate, return 'Error'"),
+    translatedText: z.string().describe("The translation of the phrase into Kannada."),
+    pronunciation: z.string().describe("A romanized, phonetic spelling of the Kannada translation to help with pronunciation."),
   })},
-  tools: [profanityCheckerTool],
   prompt: `You are a language tutor specializing in English and Kannada. A user has asked a question to learn how to say something in Kannada.
 
 Your tasks are:
-1.  Use the profanityChecker tool to check if the user's query is inappropriate. You MUST call the tool with the user's entire query by passing it as the 'text' parameter, like this: \`profanityChecker({text: query})\`.
-2.  If the tool returns \`true\`, you MUST respond with "I am unable to process this request." in the translatedText field and "Error" in the pronunciation field.
-3.  If the tool returns \`false\`, identify the specific English phrase the user wants to translate from their question.
-4.  Translate that phrase accurately into Kannada.
-5.  Provide a simple, romanized (English alphabet) phonetic spelling for the Kannada translation.
+1.  Identify the specific English phrase the user wants to translate from their question.
+2.  Translate that phrase accurately into Kannada.
+3.  Provide a simple, romanized (English alphabet) phonetic spelling for the Kannada translation.
 
 **User's Question:**
 "{{{query}}}"
@@ -112,23 +98,28 @@ const translateTextFlow = ai.defineFlow(
     outputSchema: TranslateTextOutputSchema,
   },
   async (input) => {
-    // First, translate the text.
-    const {output: translation} = await translatePrompt(input);
-    if (!translation) {
-      throw new Error('Failed to translate text.');
-    }
-    
-    // If the profanity checker returned an error message, don't generate audio.
-    if (translation.translatedText === 'I am unable to process this request.') {
+    // Step 1: Check for profanity first.
+    const isProfane = await profanityChecker(input.query);
+
+    // Step 2: If profane, return an error-like structure.
+    if (isProfane) {
       return {
-        ...translation,
+        sourceText: input.query,
+        translatedText: 'I am unable to process this request.',
+        pronunciation: 'Error',
         audioDataUri: undefined,
       };
     }
 
+    // Step 3: If not profane, proceed with translation.
+    const {output: translation} = await translatePrompt(input);
+    if (!translation) {
+      throw new Error('Failed to translate text.');
+    }
+
+    // Step 4: Generate audio for the translated text.
     let audioDataUri: string | undefined = undefined;
     try {
-      // Then, generate audio for the translated text.
       const {media} = await ai.generate({
         model: googleAI.model('gemini-2.5-flash-preview-tts'),
         config: {
