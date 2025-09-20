@@ -44,17 +44,6 @@ export function ChatMessage({ message }: { message: Message }) {
             <div className="leading-relaxed">{formattedContent}</div>
         )}
        
-        {message.imageUrl && (
-            <div className="mt-4">
-                <Image
-                    src={message.imageUrl}
-                    alt="Visual explanation"
-                    width={400}
-                    height={300}
-                    className="rounded-md"
-                />
-            </div>
-        )}
         {message.citations && message.citations.length > 0 && (
           <div className="mt-3 border-t pt-2">
             <h4 className="text-xs font-semibold mb-1">Sources:</h4>

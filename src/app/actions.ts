@@ -16,7 +16,7 @@ export async function getAiExplanation(problem: string) {
     }
 }
 
-export async function askQuestion(question: string, history: string[] = []): Promise<{ success: boolean; data?: CurriculumQuestionOutput; error?: string }> {
+export async function askQuestion(question: string, history: string[] = []): Promise<{ success: boolean; data?: Omit<CurriculumQuestionOutput, 'imageUrl'>; error?: string }> {
     try {
         const result = await askCurriculumQuestionFlow({ question });
         return { success: true, data: result };

@@ -85,7 +85,6 @@ export default function LearnPage() {
             role: 'assistant', 
             content: result.data.answer,
             citations: result.data.citations,
-            imageUrl: result.data.imageUrl
         };
         setMessages(prev => [...prev, assistantMessage]);
     } else {
@@ -151,7 +150,7 @@ export default function LearnPage() {
           </div>
         </div>
 
-      <Card className="flex-1 flex flex-col overflow-hidden">
+      <Card className="flex flex-col flex-1 overflow-hidden">
         <CardContent className="flex flex-col p-0 h-full">
           <ScrollArea className="flex-grow p-4" ref={scrollAreaRef}>
             <div className="space-y-6">

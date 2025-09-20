@@ -22,7 +22,6 @@ const CurriculumQuestionOutputSchema = z.object({
   classLevel: z.number().optional().describe('Class level of the question'),
   chapter: z.string().optional().describe('Chapter of the question'),
   concepts: z.array(z.string()).optional().describe('Concepts related to the question'),
-  imageUrl: z.string().optional().describe('URL of a generated image to explain the concept.'),
 });
 export type CurriculumQuestionOutput = z.infer<typeof CurriculumQuestionOutputSchema>;
 
@@ -87,51 +86,6 @@ const curriculumQAFlow = ai.defineFlow(
       throw new Error("Failed to generate a text answer.");
     }
     
-    // Do not generate an image if the question was off-topic.
-    if (answer.output.answer.startsWith("That does not sound like a question")) {
-        return {
-            ...answer.output,
-            imageUrl: undefined,
-        };
-    }
-
-    let imageUrl: string | undefined = undefined;
-    try {
-      // After getting the answer, try to generate an image.
-      const image = await ai.generate({
-        model: 'googleai/imagen-4.0-fast-generate-001',
-        prompt: input.question,
-        config: {
-            safetySettings: [
-                {
-                  category: 'HARM_CATEGORY_HATE_SPEECH',
-                  threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-                },
-                {
-                  category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-                  threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-                },
-                {
-                  category: 'HARM_CATEGORY_HARASSMENT',
-                  threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-                },
-                {
-                  category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-                  threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-                },
-              ],
-        }
-      });
-      imageUrl = image.media?.url;
-    } catch (e) {
-      // If image generation fails, we log it but don't block the response.
-      console.error("Image generation failed, but returning text answer.", e);
-      imageUrl = undefined;
-    }
-    
-    return {
-        ...answer.output,
-        imageUrl,
-    };
+    return answer.output;
   }
 );
