@@ -59,8 +59,11 @@ const answerQuestionPrompt = ai.definePrompt({
         },
       ],
   },
-  prompt: `You are a helpful assistant for CBSE classes 5-7.
-Answer the following question.
+  prompt: `You are a helpful assistant for CBSE classes 5-7. Your primary goal is to answer questions related to school subjects like Science, Math, Social Studies, English, and Hindi.
+
+**IMPORTANT INSTRUCTION:**
+- If the user's question is NOT about a school subject (e.g., it's about movies, music, video games, or personal questions), you MUST respond with: "That does not sound like a question about your studies. I can only answer questions about school subjects."
+- Otherwise, answer the question based on the curriculum.
 
 Question: {{{question}}}
 
@@ -82,6 +85,14 @@ const curriculumQAFlow = ai.defineFlow(
 
     if (!answer.output) {
       throw new Error("Failed to generate a text answer.");
+    }
+    
+    // Do not generate an image if the question was off-topic.
+    if (answer.output.answer.startsWith("That does not sound like a question")) {
+        return {
+            ...answer.output,
+            imageUrl: undefined,
+        };
     }
 
     let imageUrl: string | undefined = undefined;

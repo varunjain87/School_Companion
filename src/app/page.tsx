@@ -19,13 +19,12 @@ const samplePrompts = [
     prompt: "How does a hydroelectric dam generate electricity?",
   },
   {
-    title: "Latest K-pop song",
-    prompt: "What is the latest K-pop song?",
+    title: "Photosynthesis",
+    prompt: "What is photosynthesis?",
   },
 ];
 
 const getInitialMessages = (): Message[] => {
-    if (typeof window === 'undefined') return [];
     try {
         const item = window.sessionStorage.getItem('chatMessages');
         return item ? JSON.parse(item) : [];
@@ -51,10 +50,12 @@ export default function LearnPage() {
 
 
   useEffect(() => {
-    try {
-        window.sessionStorage.setItem('chatMessages', JSON.stringify(messages));
-    } catch (error) {
-        console.error("Could not save messages to session storage", error);
+    if (typeof window !== 'undefined') {
+        try {
+            window.sessionStorage.setItem('chatMessages', JSON.stringify(messages));
+        } catch (error) {
+            console.error("Could not save messages to session storage", error);
+        }
     }
   }, [messages]);
 
@@ -105,6 +106,7 @@ export default function LearnPage() {
   
   const handlePromptClick = (prompt: string) => {
     setInput(prompt);
+    handleSubmit(undefined, prompt);
   };
 
   const togglePedagogy = () => {
@@ -134,7 +136,7 @@ export default function LearnPage() {
         <CardContent className="flex-1 flex flex-col p-0">
           <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
             <div className="space-y-6">
-              {messages.length === 0 && (
+              {messages.length === 0 && !isLoading && (
                 <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
                   <Sparkles className="h-12 w-12 mb-4 text-primary" />
                   <h2 className="text-lg font-semibold">Start your learning journey</h2>
