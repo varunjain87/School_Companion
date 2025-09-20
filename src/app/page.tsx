@@ -32,17 +32,19 @@ export default function LearnPage() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [samplePrompts, setSamplePrompts] = useState<SamplePrompt[]>([]);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    const shuffledNotes = [...sampleNotes].sort(() => 0.5 - Math.random());
-    const prompts = shuffledNotes.slice(0, 2).map(note => {
-      const concept = note.concepts[0] || note.chapter;
-      return {
-        title: concept.charAt(0).toUpperCase() + concept.slice(1),
-        prompt: `What is ${concept.toLowerCase()}?`,
-      };
+    // Flatten all concepts from all notes into a single array
+    const allConcepts = sampleNotes.flatMap(note => note.concepts);
+    // Shuffle the concepts
+    const shuffledConcepts = allConcepts.sort(() => 0.5 - Math.random());
+    // Take the first 2 unique concepts to create prompts
+    const prompts = [...new Set(shuffledConcepts)].slice(0, 2).map(concept => {
+        return {
+            title: concept.charAt(0).toUpperCase() + concept.slice(1),
+            prompt: `What is ${concept.toLowerCase()}?`,
+        };
     });
     setSamplePrompts(prompts);
     setMessages(getInitialMessages());
@@ -55,15 +57,6 @@ export default function LearnPage() {
             window.sessionStorage.setItem('chatMessages', JSON.stringify(messages));
         } catch (error) {
             console.error("Could not save messages to session storage", error);
-        }
-    }
-  }, [messages]);
-
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-        const viewport = scrollAreaRef.current.querySelector('div[data-radix-scroll-area-viewport]');
-        if (viewport) {
-          viewport.scrollTop = viewport.scrollHeight;
         }
     }
   }, [messages]);
@@ -122,24 +115,22 @@ export default function LearnPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem-2rem)] md:h-[calc(100vh-4rem)]">
+    <div className="flex flex-col h-[calc(100vh-4rem)]">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold font-headline">Ask me anything</h1>
             <p className="text-muted-foreground">Ask anything about your studies</p>
           </div>
-          <div className="flex items-center gap-2">
-            {messages.length > 0 && (
+          {messages.length > 0 && (
               <Button variant="outline" size="sm" onClick={handleResetChat} aria-label="Reset chat">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Reset Chat
               </Button>
             )}
-          </div>
         </div>
 
       <Card className="flex flex-col flex-1 overflow-hidden">
-        <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+        <ScrollArea className="flex-1 p-4">
           <div className="space-y-6 pr-4">
             {messages.length === 0 && !isLoading && (
               <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
