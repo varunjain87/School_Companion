@@ -27,6 +27,7 @@ const CurriculumQuestionOutputSchema = z.object({
   classLevel: z.number().optional().describe('Class level of the question'),
   chapter: z.string().optional().describe('Chapter of the question'),
   concepts: z.array(z.string()).optional().describe('Concepts related to the question'),
+  imageUrl: z.string().optional().describe('URL of a generated image to explain the concept.'),
 });
 export type CurriculumQuestionOutput = z.infer<typeof CurriculumQuestionOutputSchema>;
 
@@ -79,7 +80,10 @@ const answerQuestionPrompt = ai.definePrompt({
       content: z.string(),
     })),
   })},
-  output: {schema: CurriculumQuestionOutputSchema},
+  output: {schema: z.object({
+      answer: z.string().describe('The answer to the question, grounded in the curriculum.'),
+      citations: z.array(z.string()).describe('List of note IDs cited in the answer.'),
+  })},
   prompt: `You are a helpful assistant for CBSE classes 5-7.
 Answer the question based on the provided notes. Cite the note IDs where the information was found.
 If the notes do not contain the answer, respond that you cannot answer the question with the provided notes, and suggest in-scope topics.
@@ -100,9 +104,9 @@ const curriculumQAFlow = ai.defineFlow(
     inputSchema: CurriculumQuestionInputSchema,
     outputSchema: CurriculumQuestionOutputSchema,
   },
-  async input => {
+  async (input) => {
     const classification = await classifyPrompt(input);
-    const {subject, classLevel, chapter, concepts} = classification.output!;
+    const { subject, classLevel, chapter, concepts } = classification.output!;
 
     const notes = await retrieveNotes({
       subject,
@@ -111,11 +115,24 @@ const curriculumQAFlow = ai.defineFlow(
       concepts,
     });
 
-    const answer = await answerQuestionPrompt({
-      question: input.question,
-      notes,
-    });
-
-    return answer.output!;
+    const [answer, image] = await Promise.all([
+      answerQuestionPrompt({
+        question: input.question,
+        notes,
+      }),
+      ai.generate({
+        model: 'googleai/imagen-4.0-fast-generate-001',
+        prompt: `A simple, educational, and kid-friendly visual representation of: ${input.question}`,
+      }),
+    ]);
+    
+    return {
+        ...answer.output!,
+        imageUrl: image.media?.url,
+        subject,
+        classLevel,
+        chapter,
+        concepts,
+    };
   }
 );

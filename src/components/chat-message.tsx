@@ -1,6 +1,7 @@
 "use client";
 
 import { Bot, User } from "lucide-react";
+import Image from 'next/image';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -9,6 +10,7 @@ export type Message = {
   role: 'user' | 'assistant';
   content: string;
   citations?: string[];
+  imageUrl?: string;
 };
 
 export function ChatMessage({ message }: { message: Message }) {
@@ -29,6 +31,17 @@ export function ChatMessage({ message }: { message: Message }) {
           : "bg-card"
       )}>
         <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+        {message.imageUrl && (
+            <div className="mt-4">
+                <Image
+                    src={message.imageUrl}
+                    alt="Visual explanation"
+                    width={400}
+                    height={300}
+                    className="rounded-md"
+                />
+            </div>
+        )}
         {message.citations && message.citations.length > 0 && (
           <div className="mt-3 border-t pt-2">
             <h4 className="text-xs font-semibold mb-1">Sources:</h4>

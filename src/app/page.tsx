@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import { ChatMessage, Message } from '@/components/chat-message';
 import { askQuestion } from '@/app/actions';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useProgress } from '@/hooks/use-progress';
 
 const samplePrompts = [
   {
@@ -29,6 +31,7 @@ export default function LearnPage() {
   const [pedagogyMode, setPedagogyMode] = useState('direct'); // Mocking remote config
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { progress } = useProgress();
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -49,13 +52,14 @@ export default function LearnPage() {
     setInput('');
     setIsLoading(true);
 
-    const result = await askQuestion(userMessageContent);
+    const result = await askQuestion(userMessageContent, progress.chaptersPracticed);
     
     if (result.success && result.data) {
         const assistantMessage: Message = { 
             role: 'assistant', 
             content: result.data.answer,
             citations: result.data.citations,
+            imageUrl: result.data.imageUrl
         };
         setMessages(prev => [...prev, assistantMessage]);
     } else {

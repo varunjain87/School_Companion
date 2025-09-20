@@ -14,14 +14,14 @@ export async function getAiExplanation(problem: string) {
     }
 }
 
-export async function askQuestion(question: string): Promise<{ success: boolean; data?: CurriculumQuestionOutput; error?: string }> {
+export async function askQuestion(question: string, history: string[] = []): Promise<{ success: boolean; data?: CurriculumQuestionOutput; error?: string }> {
     try {
-        const filterResult = await filterPromptsBySubjectFlow({ prompt: question });
+        const filterResult = await filterPromptsBySubjectFlow({ prompt: question, history });
         if (!filterResult.isRelevant) {
             return {
                 success: true,
                 data: {
-                    answer: `I can only answer questions related to the CBSE curriculum for classes 5-7. How about we try a topic like: ${filterResult.suggestedTopic}?`,
+                    answer: filterResult.response || "I can't answer that. Maybe we can talk about something else from your studies?",
                     citations: [],
                 }
             };
