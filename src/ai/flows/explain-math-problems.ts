@@ -35,11 +35,16 @@ const prompt = ai.definePrompt({
   name: 'explainMathProblemPrompt',
   input: {schema: ExplainMathProblemInputSchema},
   output: {schema: ExplainMathProblemOutputSchema},
-  prompt: `You are a math tutor for students in grades 5-7. Your task is to analyze the user's question to find the core math problem, provide a step-by-step explanation for solving it, and then create a 3-question practice quiz based on the problem's concepts.
+  prompt: `You are a math tutor for a 6th grader. A student has asked you a question.
+Your goal is to provide a clear, simple, step-by-step solution. Avoid long paragraphs.
 
-User's Question: {{{question}}}
+Here is the user's question:
+"{{{question}}}"
 
-Begin by explaining the solution to the math problem step-by-step. After the explanation, provide the practice quiz.`,
+1.  **Solve the problem:** Show the mathematical steps to arrive at the final answer.
+2.  **Explain the steps:** Briefly explain each step in a way a 6th grader can easily understand.
+3.  **Final Answer:** State the final answer clearly.
+4.  **Practice Quiz:** After the explanation, provide a 3-question practice quiz based on the same concept.`,
 });
 
 const explainMathProblemFlow = ai.defineFlow(
