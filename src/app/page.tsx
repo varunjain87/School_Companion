@@ -24,27 +24,33 @@ const getInitialMessages = (): Message[] => {
     }
 }
 
+type SamplePrompt = {
+    title: string;
+    prompt: string;
+};
+
 export default function LearnPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [pedagogyMode, setPedagogyMode] = useState('direct'); // Mocking remote config
+  const [samplePrompts, setSamplePrompts] = useState<SamplePrompt[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { progress } = useProgress();
 
-  const samplePrompts = useMemo(() => {
+  useEffect(() => {
+    // Generate sample prompts on the client side to avoid hydration mismatch
     const shuffledNotes = [...sampleNotes].sort(() => 0.5 - Math.random());
-    return shuffledNotes.slice(0, 2).map(note => {
+    const prompts = shuffledNotes.slice(0, 2).map(note => {
       const concept = note.concepts[0] || note.chapter;
       return {
         title: concept.charAt(0).toUpperCase() + concept.slice(1),
         prompt: `What is ${concept.toLowerCase()}?`,
       };
     });
-  }, []);
-
-  useEffect(() => {
+    setSamplePrompts(prompts);
+    
     // Load messages from session storage only on the client side after mount
     setMessages(getInitialMessages());
   }, []);
