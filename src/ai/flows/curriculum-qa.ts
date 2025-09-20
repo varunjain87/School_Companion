@@ -100,7 +100,7 @@ const curriculumQAFlow = ai.defineFlow(
       // After getting the answer, try to generate an image.
       const image = await ai.generate({
         model: 'googleai/imagen-4.0-fast-generate-001',
-        prompt: `A simple, educational, and kid-friendly visual representation of: ${input.question}`,
+        prompt: `Generate an image of: A simple, educational, and kid-friendly visual representation of ${input.question}`,
         config: {
             safetySettings: [
                 {
