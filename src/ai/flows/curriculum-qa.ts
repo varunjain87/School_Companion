@@ -14,6 +14,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { sampleNotes, type CurriculumNote } from '@/lib/sample-curriculum';
 
 const CurriculumQuestionInputSchema = z.object({
   question: z.string().describe('The question to be answered.'),
@@ -35,23 +36,6 @@ export async function askCurriculumQuestion(input: CurriculumQuestionInput): Pro
   return curriculumQAFlow(input);
 }
 
-const classifyPrompt = ai.definePrompt({
-  name: 'classifyPrompt',
-  input: {schema: CurriculumQuestionInputSchema},
-  output: {schema: z.object({
-    subject: z.string(),
-    classLevel: z.number(),
-    chapter: z.string(),
-    concepts: z.array(z.string()),
-  })},
-  prompt: `Given the question, classify it into subject, class level, chapter and concepts.
-Question: {{{question}}}
-Subject:
-Class Level:
-Chapter:
-Concepts:`,
-});
-
 const answerQuestionPrompt = ai.definePrompt({
   name: 'answerQuestionPrompt',
   input: {schema: z.object({
@@ -62,7 +46,7 @@ const answerQuestionPrompt = ai.definePrompt({
       citations: z.array(z.string()).describe('List of sources cited in the answer.'),
   })},
   prompt: `You are a helpful assistant for CBSE classes 5-7.
-Answer the question.
+Answer the following question.
 
 Question: {{{question}}}
 
@@ -76,9 +60,7 @@ const curriculumQAFlow = ai.defineFlow(
     outputSchema: CurriculumQuestionOutputSchema,
   },
   async (input) => {
-    const classification = await classifyPrompt(input);
-    const { subject, classLevel, chapter, concepts } = classification.output!;
-
+    
     const [answer, image] = await Promise.all([
       answerQuestionPrompt({
         question: input.question,
@@ -92,10 +74,6 @@ const curriculumQAFlow = ai.defineFlow(
     return {
         ...answer.output!,
         imageUrl: image.media?.url,
-        subject,
-        classLevel,
-        chapter,
-        concepts,
     };
   }
 );
