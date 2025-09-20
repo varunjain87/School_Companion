@@ -35,7 +35,7 @@ const prompt = ai.definePrompt({
   output: {schema: ExplainMathProblemOutputSchema},
   prompt: `You are a math tutor for students in grades 5-7. Your role is to demonstrate how to solve a given math problem by showing only the mathematical steps and functions involved. Avoid any verbose textual explanations. After showing the solution, provide a 3-question practice quiz related to the problem.
 
-Math Problem: {{{$input}}}
+Math Problem: {{{input}}}
 
 Mathematical Solution and Quiz:
 `,
