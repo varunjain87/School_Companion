@@ -152,8 +152,8 @@ export default function LearnPage() {
         </div>
 
       <Card className="flex-1 flex flex-col overflow-hidden">
-        <CardContent className="flex-1 flex flex-col p-0">
-          <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+        <CardContent className="flex flex-col p-0 h-full">
+          <ScrollArea className="flex-grow p-4" ref={scrollAreaRef}>
             <div className="space-y-6">
               {messages.length === 0 && !isLoading && (
                 <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
