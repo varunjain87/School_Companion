@@ -31,50 +31,49 @@ export async function translateText(
   return translateTextFlow(input);
 }
 
+const profanityCheckerTool = ai.defineTool(
+  {
+    name: 'profanityChecker',
+    description:
+      'Checks if the input contains profanity or harmful content. Returns true if it does, false otherwise.',
+    inputSchema: z.object({
+      text: z.string(),
+    }),
+    outputSchema: z.boolean(),
+  },
+  async (input) => {
+    const llmResponse = await ai.generate({
+      prompt: `Is the following text inappropriate, hateful, sexually explicit, or profane? Respond with only "true" or "false". Text: "${input.text}"`,
+      config: {
+        temperature: 0,
+      },
+    });
+
+    return llmResponse.text.toLowerCase().includes('true');
+  }
+);
+
+
 const translatePrompt = ai.definePrompt({
   name: 'translatePrompt',
   input: {schema: TranslateTextInputSchema},
   output: {schema: z.object({
     sourceText: z.string().describe("The text phrase that the user wants to translate."),
-    translatedText: z.string().describe("The translation of the phrase into Kannada."),
-    pronunciation: z.string().describe("A romanized, phonetic spelling of the Kannada translation to help with pronunciation."),
+    translatedText: z.string().describe("The translation of the phrase into Kannada. If the input is inappropriate, return 'I am unable to process this request.'"),
+    pronunciation: z.string().describe("A romanized, phonetic spelling of the Kannada translation to help with pronunciation. If the input is inappropriate, return 'Error'"),
   })},
-  config: {
-    safetySettings: [
-        {
-          category: 'HARM_CATEGORY_HATE_SPEECH',
-          threshold: 'BLOCK_LOW_AND_ABOVE',
-        },
-        {
-          category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-          threshold: 'BLOCK_LOW_AND_ABOVE',
-        },
-        {
-          category: 'HARM_CATEGORY_HARASSMENT',
-          threshold: 'BLOCK_LOW_AND_ABOVE',
-        },
-        {
-          category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-          threshold: 'BLOCK_LOW_AND_ABOVE',
-        },
-      ],
-  },
+  tools: [profanityCheckerTool],
   prompt: `You are a language tutor specializing in English and Kannada. A user has asked a question to learn how to say something in Kannada.
 
 Your tasks are:
-1.  Identify the specific English phrase the user wants to translate from their question.
-2.  Translate that phrase accurately into Kannada.
-3.  Provide a simple, romanized (English alphabet) phonetic spelling for the Kannada translation.
+1.  Check if the user's query contains any profanity or harmful content using the profanityChecker tool.
+2.  If the input is harmful, you MUST respond with "I am unable to process this request." in the translatedText field and "Error" in the pronunciation field.
+3.  If the input is safe, identify the specific English phrase the user wants to translate from their question.
+4.  Translate that phrase accurately into Kannada.
+5.  Provide a simple, romanized (English alphabet) phonetic spelling for the Kannada translation.
 
 **User's Question:**
 "{{{query}}}"
-
-**Example:**
-If the user asks: "how to say 'good morning' in kannada"
-Your output should be:
-- sourceText: "good morning"
-- translatedText: "ಶುಭೋದಯ"
-- pronunciation: "shubhodaya"
 
 Provide your response in the requested structured format.`,
 });
@@ -117,6 +116,14 @@ const translateTextFlow = ai.defineFlow(
     const {output: translation} = await translatePrompt(input);
     if (!translation) {
       throw new Error('Failed to translate text.');
+    }
+    
+    // If the profanity checker returned an error message, don't generate audio.
+    if (translation.translatedText === 'I am unable to process this request.') {
+      return {
+        ...translation,
+        audioDataUri: undefined,
+      };
     }
 
     let audioDataUri: string | undefined = undefined;

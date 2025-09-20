@@ -4,8 +4,7 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Download, Languages, Loader2, Volume2, WifiOff } from "lucide-react";
-import { Badge } from '@/components/ui/badge';
+import { Languages, Loader2, Volume2 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { getAiTranslation } from '@/app/actions';
 import type { TranslateTextOutput } from '@/ai/flows/translate-text';
@@ -15,16 +14,11 @@ const sampleQuery = "How do you say 'Thank you' in Kannada?";
 export default function TranslatePage() {
     const [query, setQuery] = useState('');
     const [translationResult, setTranslationResult] = useState<TranslateTextOutput | null>(null);
-    const [isModelDownloaded, setIsModelDownloaded] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
 
     const handleTranslate = async (text?: string) => {
         const textToTranslate = text || query;
-        if (!isModelDownloaded) {
-             toast({ title: "Model not downloaded", description: `Please download the Kannada model for offline translation.`, variant: "destructive"});
-             return;
-        }
         if (!textToTranslate.trim()) {
             setTranslationResult(null);
             return;
@@ -36,23 +30,18 @@ export default function TranslatePage() {
         const result = await getAiTranslation(textToTranslate);
 
         if (result.success && result.data) {
-            setTranslationResult(result.data);
+            if (result.data.translatedText === 'I am unable to process this request.') {
+                toast({ title: "Content Warning", description: "The phrase could not be translated due to safety guidelines.", variant: "destructive" });
+                setTranslationResult(null);
+            } else {
+                setTranslationResult(result.data);
+            }
         } else {
             toast({ title: "Translation Failed", description: result.error, variant: "destructive" });
         }
 
         setIsLoading(false);
     };
-    
-    const handleDownload = () => {
-        toast({ title: "Downloading...", description: `Kannada language model is being downloaded.`});
-        setIsLoading(true);
-        setTimeout(() => {
-            setIsModelDownloaded(true);
-            setIsLoading(false);
-            toast({ title: "Download Complete!", description: "You can now use offline translation."});
-        }, 1500);
-    }
 
     const playAudio = () => {
         if (translationResult?.audioDataUri) {
@@ -68,20 +57,9 @@ export default function TranslatePage() {
 
     return (
         <div>
-            <div className="mb-4 flex justify-between items-start">
-                <div>
-                    <h1 className="text-2xl font-bold font-headline">Translate</h1>
-                    <p className="text-muted-foreground">English ↔ Kannada offline translation.</p>
-                </div>
-                {isModelDownloaded ? (
-                    <Badge variant="outline" className="text-accent-foreground border-accent">
-                        <WifiOff className="mr-2 h-4 w-4" /> Offline Ready
-                    </Badge>
-                ) : (
-                     <Button onClick={handleDownload} disabled={isLoading}>
-                        <Download className="mr-2 h-4 w-4" /> Download Kannada Model
-                    </Button>
-                )}
+            <div className="mb-4">
+                <h1 className="text-2xl font-bold font-headline">Translate</h1>
+                <p className="text-muted-foreground">English ↔ Kannada translation.</p>
             </div>
 
             <Card className="mb-4">
@@ -95,14 +73,14 @@ export default function TranslatePage() {
                             onChange={(e) => setQuery(e.target.value)} 
                             placeholder="e.g., How to say 'Good morning' in Kannada?"
                             className="h-24"
-                            disabled={!isModelDownloaded || isLoading}
+                            disabled={isLoading}
                         />
                         <div className="flex flex-wrap gap-2">
-                            <Button onClick={() => handleTranslate()} disabled={!isModelDownloaded || isLoading || !query.trim()}>
+                            <Button onClick={() => handleTranslate()} disabled={isLoading || !query.trim()}>
                                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Languages className="mr-2 h-4 w-4" />}
                                 Translate
                             </Button>
-                            <Button variant="outline" onClick={handleSample} disabled={!isModelDownloaded || isLoading}>
+                            <Button variant="outline" onClick={handleSample} disabled={isLoading}>
                                 Try a sample
                             </Button>
                         </div>
