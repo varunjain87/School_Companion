@@ -36,7 +36,6 @@ export default function LearnPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Generate sample prompts on the client side to avoid hydration mismatch
     const shuffledNotes = [...sampleNotes].sort(() => 0.5 - Math.random());
     const prompts = shuffledNotes.slice(0, 2).map(note => {
       const concept = note.concepts[0] || note.chapter;
@@ -46,8 +45,6 @@ export default function LearnPage() {
       };
     });
     setSamplePrompts(prompts);
-    
-    // Load messages from session storage only on the client side after mount
     setMessages(getInitialMessages());
   }, []);
 
@@ -125,7 +122,7 @@ export default function LearnPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-5rem)]">
+    <div className="flex flex-col h-[calc(100vh-4rem-2rem)] md:h-[calc(100vh-4rem)]">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold font-headline">Ask me anything</h1>
@@ -142,25 +139,23 @@ export default function LearnPage() {
         </div>
 
       <Card className="flex flex-col flex-1 overflow-hidden">
-        <CardContent className="flex-grow p-4">
-            <ScrollArea className="h-full" ref={scrollAreaRef}>
-              <div className="space-y-6 pr-4">
-                {messages.length === 0 && !isLoading && (
-                  <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
-                    <Sparkles className="h-12 w-12 mb-4 text-primary" />
-                    <h2 className="text-lg font-semibold">Start your learning journey</h2>
-                    <p className="max-w-sm">Ask a question or try one of the examples below.</p>
-                  </div>
-                )}
-                {messages.map((msg, index) => (
-                  <ChatMessage key={index} message={msg} />
-                ))}
-                {isLoading && (
-                   <ChatMessage message={{role: 'assistant', content: 'Thinking...'}} />
-                )}
+        <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+          <div className="space-y-6 pr-4">
+            {messages.length === 0 && !isLoading && (
+              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
+                <Sparkles className="h-12 w-12 mb-4 text-primary" />
+                <h2 className="text-lg font-semibold">Start your learning journey</h2>
+                <p className="max-w-sm">Ask a question or try one of the examples below.</p>
               </div>
-            </ScrollArea>
-        </CardContent>
+            )}
+            {messages.map((msg, index) => (
+              <ChatMessage key={index} message={msg} />
+            ))}
+            {isLoading && (
+               <ChatMessage message={{role: 'assistant', content: 'Thinking...'}} />
+            )}
+          </div>
+        </ScrollArea>
           
         <div className="border-t p-4 bg-background/50">
           <div className="mb-2 flex flex-wrap gap-2">
@@ -192,3 +187,5 @@ export default function LearnPage() {
     </div>
   );
 }
+
+    
