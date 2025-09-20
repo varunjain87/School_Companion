@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,17 +12,7 @@ import { askQuestion } from '@/app/actions';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useProgress } from '@/hooks/use-progress';
-
-const samplePrompts = [
-  {
-    title: "Hydroelectric dam",
-    prompt: "How does a hydroelectric dam generate electricity?",
-  },
-  {
-    title: "Photosynthesis",
-    prompt: "What is photosynthesis?",
-  },
-];
+import { sampleNotes } from '@/lib/sample-curriculum';
 
 const getInitialMessages = (): Message[] => {
     try {
@@ -42,6 +32,17 @@ export default function LearnPage() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { progress } = useProgress();
+
+  const samplePrompts = useMemo(() => {
+    const shuffledNotes = [...sampleNotes].sort(() => 0.5 - Math.random());
+    return shuffledNotes.slice(0, 2).map(note => {
+      const concept = note.concepts[0] || note.chapter;
+      return {
+        title: concept.charAt(0).toUpperCase() + concept.slice(1),
+        prompt: `What is ${concept.toLowerCase()}?`,
+      };
+    });
+  }, []);
 
   useEffect(() => {
     // Load messages from session storage only on the client side after mount
