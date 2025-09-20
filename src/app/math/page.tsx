@@ -67,6 +67,13 @@ export default function MathPage() {
         onSubmit({ problem: sampleProblem });
     };
 
+    const formattedExplanation = explanation?.explanation.split(/(\d\.\s*\*.*?\*)/g).filter(Boolean).map((part, index) => {
+        if (part.match(/\d\.\s*\*.*?\*/)) {
+            return <p key={index} className="font-bold my-2">{part}</p>;
+        }
+        return <p key={index}>{part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>;
+    });
+
     return (
         <div>
             <div className="mb-4">
@@ -127,7 +134,7 @@ export default function MathPage() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-sm max-w-none whitespace-pre-wrap leading-relaxed">{explanation.explanation}</div>
+                                    <div className="text-sm max-w-none whitespace-pre-wrap leading-relaxed">{formattedExplanation}</div>
                                 </CardContent>
                             </Card>
                             <Card>

@@ -36,7 +36,7 @@ const prompt = ai.definePrompt({
   input: {schema: ExplainMathProblemInputSchema},
   output: {schema: ExplainMathProblemOutputSchema},
   prompt: `You are a math tutor for a 6th grader. A student has asked you a question.
-Your goal is to provide a clear, simple, step-by-step solution. Avoid long paragraphs.
+Your goal is to provide a clear, simple, step-by-step solution. Avoid long paragraphs. Use a numbered list for steps.
 
 Here is the user's question:
 "{{{question}}}"
