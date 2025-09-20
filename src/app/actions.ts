@@ -3,6 +3,7 @@
 import { explainMathProblem as explainMathProblemFlow, type ExplainMathProblemInput } from "@/ai/flows/explain-math-problems";
 import { askCurriculumQuestion as askCurriculumQuestionFlow, type CurriculumQuestionOutput } from "@/ai/flows/curriculum-qa";
 import { translateText as translateTextFlow, type TranslateTextInput, type TranslateTextOutput } from "@/ai/flows/translate-text";
+import { summarizeQuestions as summarizeQuestionsFlow, type SummarizeQuestionsInput } from "@/ai/flows/summarize-questions";
 
 export async function getAiExplanation(problem: string) {
     try {
@@ -32,5 +33,16 @@ export async function getAiTranslation(query: string): Promise<{ success: boolea
     } catch (error) {
         console.error(error);
         return { success: false, error: "Failed to get translation from AI." };
+    }
+}
+
+export async function getAiSummary(questions: string[]): Promise<{ success: boolean; data?: { summary: string }; error?: string }> {
+    try {
+        const input: SummarizeQuestionsInput = { questions };
+        const result = await summarizeQuestionsFlow(input);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error: "Failed to get summary from AI." };
     }
 }

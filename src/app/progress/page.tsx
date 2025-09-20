@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from 'react';
 import { useProgress } from '@/hooks/use-progress';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Flame, Trash2, CheckCircle, Circle, Brain, BookCopy } from 'lucide-react';
+import { Flame, Trash2, CheckCircle, Circle, Brain, BookCopy, Mail, Loader2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +17,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { getAiSummary } from '@/app/actions';
+import { useToast } from '@/hooks/use-toast';
+import type { Message } from '@/components/chat-message';
+
 
 const suggestedConcepts = [
     {name: "Comparing unlike fractions", href: "/math"},
@@ -25,35 +30,84 @@ const suggestedConcepts = [
 
 export default function ProgressPage() {
     const { progress, resetProgress, streakData, streak } = useProgress();
+    const { toast } = useToast();
+    const [isSummarizing, setIsSummarizing] = useState(false);
+
+    const handleSendSummary = async () => {
+        setIsSummarizing(true);
+        try {
+            const item = window.sessionStorage.getItem('chatMessages');
+            const messages: Message[] = item ? JSON.parse(item) : [];
+            const userQuestions = messages.filter(m => m.role === 'user').map(m => m.content);
+
+            if (userQuestions.length === 0) {
+                toast({
+                    title: "No Activity",
+                    description: "No questions have been asked yet today.",
+                });
+                return;
+            }
+            
+            const result = await getAiSummary(userQuestions);
+
+            if (result.success) {
+                toast({
+                    title: "Summary Sent",
+                    description: "The daily learning summary has been emailed to the parent.",
+                });
+            } else {
+                toast({
+                    title: "Summarization Failed",
+                    description: result.error,
+                    variant: "destructive",
+                });
+            }
+        } catch (error) {
+            console.error("Error sending summary:", error);
+            toast({
+                title: "Error",
+                description: "An unexpected error occurred while sending the summary.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsSummarizing(false);
+        }
+    };
 
     return (
         <div>
-            <div className="mb-6 flex justify-between items-start">
+            <div className="mb-6 flex flex-wrap gap-4 justify-between items-start">
                 <div>
                     <h1 className="text-2xl font-bold font-headline">Your Progress</h1>
                     <p className="text-muted-foreground">This data is stored only on your device.</p>
                 </div>
-                 <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button variant="outline">
-                            <Trash2 className="mr-2 h-4 w-4" /> Reset Data
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This will permanently delete all your progress data from this device. This action cannot be undone.
-                        </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={resetProgress} variant="destructive">
-                            Yes, delete my data
-                        </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <div className="flex gap-2">
+                    <Button onClick={handleSendSummary} disabled={isSummarizing}>
+                        {isSummarizing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-4 w-4" />}
+                        Send Daily Summary
+                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="outline">
+                                <Trash2 className="mr-2 h-4 w-4" /> Reset Data
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This will permanently delete all your progress data from this device. This action cannot be undone.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={resetProgress} variant="destructive">
+                                Yes, delete my data
+                            </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

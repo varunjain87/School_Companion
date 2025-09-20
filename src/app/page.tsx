@@ -24,14 +24,33 @@ const samplePrompts = [
   },
 ];
 
+const getInitialMessages = (): Message[] => {
+    if (typeof window === 'undefined') return [];
+    try {
+        const item = window.sessionStorage.getItem('chatMessages');
+        return item ? JSON.parse(item) : [];
+    } catch (error) {
+        console.error("Could not read messages from session storage", error);
+        return [];
+    }
+}
+
 export default function LearnPage() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(getInitialMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [pedagogyMode, setPedagogyMode] = useState('direct'); // Mocking remote config
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { progress } = useProgress();
+
+  useEffect(() => {
+    try {
+        window.sessionStorage.setItem('chatMessages', JSON.stringify(messages));
+    } catch (error) {
+        console.error("Could not save messages to session storage", error);
+    }
+  }, [messages]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
