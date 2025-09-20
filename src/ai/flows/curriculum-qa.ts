@@ -90,6 +90,26 @@ const curriculumQAFlow = ai.defineFlow(
       const image = await ai.generate({
         model: 'googleai/imagen-4.0-fast-generate-001',
         prompt: `A simple, educational, and kid-friendly visual representation of: ${input.question}`,
+        config: {
+            safetySettings: [
+                {
+                  category: 'HARM_CATEGORY_HATE_SPEECH',
+                  threshold: 'BLOCK_LOW_AND_ABOVE',
+                },
+                {
+                  category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+                  threshold: 'BLOCK_LOW_AND_ABOVE',
+                },
+                {
+                  category: 'HARM_CATEGORY_HARASSMENT',
+                  threshold: 'BLOCK_LOW_AND_ABOVE',
+                },
+                {
+                  category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+                  threshold: 'BLOCK_LOW_AND_ABOVE',
+                },
+              ],
+        }
       });
       imageUrl = image.media?.url;
     } catch (e) {
