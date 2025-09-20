@@ -31,7 +31,7 @@ export function AppLayout({ children }: PropsWithChildren) {
                 <SidebarTrigger />
                 <Logo />
             </header>
-            <div className="p-4 sm:p-6 lg:p-8">
+            <div className="p-2 sm:p-4 lg:p-6">
                 {children}
             </div>
         </SidebarInset>

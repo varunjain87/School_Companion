@@ -130,7 +130,7 @@ export default function LearnPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)]">
+    <div className="flex flex-col h-[calc(100vh-var(--header-height,4rem)-2rem)] md:h-auto">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold font-headline">Ask me anything</h1>
