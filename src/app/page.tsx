@@ -36,13 +36,19 @@ const getInitialMessages = (): Message[] => {
 }
 
 export default function LearnPage() {
-  const [messages, setMessages] = useState<Message[]>(getInitialMessages);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [pedagogyMode, setPedagogyMode] = useState('direct'); // Mocking remote config
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { progress } = useProgress();
+
+  useEffect(() => {
+    // Load messages from session storage only on the client side after mount
+    setMessages(getInitialMessages());
+  }, []);
+
 
   useEffect(() => {
     try {
