@@ -122,7 +122,7 @@ export default function LearnPage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold font-headline">Ask me anything</h1>
-            <p className="text-muted-foreground">Ask anything about your CBSE subjects.</p>
+            <p className="text-muted-foreground">Ask anything about your studies</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={togglePedagogy} aria-label="Flip pedagogy mode">
