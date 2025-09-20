@@ -66,9 +66,9 @@ const translatePrompt = ai.definePrompt({
   prompt: `You are a language tutor specializing in English and Kannada. A user has asked a question to learn how to say something in Kannada.
 
 Your tasks are:
-1.  Check if the user's query contains any profanity or harmful content using the profanityChecker tool.
-2.  If the input is harmful, you MUST respond with "I am unable to process this request." in the translatedText field and "Error" in the pronunciation field.
-3.  If the input is safe, identify the specific English phrase the user wants to translate from their question.
+1.  Use the profanityChecker tool to check if the user's query is inappropriate. You MUST call the tool with the user's entire query by passing it as the 'text' parameter, like this: \`profanityChecker({text: query})\`.
+2.  If the tool returns \`true\`, you MUST respond with "I am unable to process this request." in the translatedText field and "Error" in the pronunciation field.
+3.  If the tool returns \`false\`, identify the specific English phrase the user wants to translate from their question.
 4.  Translate that phrase accurately into Kannada.
 5.  Provide a simple, romanized (English alphabet) phonetic spelling for the Kannada translation.
 
