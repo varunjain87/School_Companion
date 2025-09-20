@@ -130,7 +130,7 @@ export default function LearnPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-var(--header-height,4rem)-2rem)] md:h-auto">
+    <div className="flex flex-col h-[calc(100svh-var(--header-height,4rem)-1rem)] md:h-[calc(100vh-var(--header-height,0px)-3rem)]">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold font-headline">Ask me anything</h1>
@@ -151,7 +151,7 @@ export default function LearnPage() {
         </div>
 
       <Card className="flex flex-col flex-1 overflow-hidden">
-        <CardContent className="flex flex-col p-0 h-full">
+        <CardContent className="flex flex-col p-0 flex-1">
           <ScrollArea className="flex-grow p-4" ref={scrollAreaRef}>
             <div className="space-y-6">
               {messages.length === 0 && !isLoading && (
