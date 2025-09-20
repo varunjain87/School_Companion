@@ -39,6 +39,26 @@ const answerQuestionPrompt = ai.definePrompt({
       answer: z.string().describe('The answer to the question.'),
       citations: z.array(z.string()).describe('List of sources cited in the answer.'),
   })},
+  config: {
+    safetySettings: [
+        {
+          category: 'HARM_CATEGORY_HATE_SPEECH',
+          threshold: 'BLOCK_LOW_AND_ABOVE',
+        },
+        {
+          category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+          threshold: 'BLOCK_LOW_AND_ABOVE',
+        },
+        {
+          category: 'HARM_CATEGORY_HARASSMENT',
+          threshold: 'BLOCK_LOW_AND_ABOVE',
+        },
+        {
+          category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+          threshold: 'BLOCK_LOW_AND_ABOVE',
+        },
+      ],
+  },
   prompt: `You are a helpful assistant for CBSE classes 5-7.
 Answer the following question.
 

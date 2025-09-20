@@ -35,12 +35,31 @@ const prompt = ai.definePrompt({
   name: 'explainMathProblemPrompt',
   input: {schema: ExplainMathProblemInputSchema},
   output: {schema: ExplainMathProblemOutputSchema},
+  config: {
+    safetySettings: [
+        {
+          category: 'HARM_CATEGORY_HATE_SPEECH',
+          threshold: 'BLOCK_LOW_AND_ABOVE',
+        },
+        {
+          category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+          threshold: 'BLOCK_LOW_AND_ABOVE',
+        },
+        {
+          category: 'HARM_CATEGORY_HARASSMENT',
+          threshold: 'BLOCK_LOW_AND_ABOVE',
+        },
+        {
+          category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+          threshold: 'BLOCK_LOW_AND_ABOVE',
+        },
+      ],
+  },
   prompt: `You are a math tutor for a 6th grader. A student has asked you a question.
 Your goal is to provide a clear, simple, step-by-step solution.
 
 **IMPORTANT INSTRUCTIONS:**
-- Your response MUST be a numbered list.
-- Each step in the list MUST be on a new line. Use "\\n\\n" to separate steps.
+- Your response MUST be a numbered list. Each step in the list MUST be on a new line. Use "\\n\\n" to separate steps.
 - Do NOT use long paragraphs. Keep explanations for each step to one or two short sentences.
 - Use bold formatting for important terms or numbers.
 

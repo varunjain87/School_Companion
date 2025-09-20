@@ -39,6 +39,26 @@ const translatePrompt = ai.definePrompt({
     translatedText: z.string().describe("The translation of the phrase into Kannada."),
     pronunciation: z.string().describe("A romanized, phonetic spelling of the Kannada translation to help with pronunciation."),
   })},
+  config: {
+    safetySettings: [
+        {
+          category: 'HARM_CATEGORY_HATE_SPEECH',
+          threshold: 'BLOCK_LOW_AND_ABOVE',
+        },
+        {
+          category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+          threshold: 'BLOCK_LOW_AND_ABOVE',
+        },
+        {
+          category: 'HARM_CATEGORY_HARASSMENT',
+          threshold: 'BLOCK_LOW_AND_ABOVE',
+        },
+        {
+          category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+          threshold: 'BLOCK_LOW_AND_ABOVE',
+        },
+      ],
+  },
   prompt: `You are a language tutor specializing in English and Kannada. A user has asked a question to learn how to say something in Kannada.
 
 Your tasks are:
