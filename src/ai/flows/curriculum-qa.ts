@@ -63,7 +63,7 @@ const answerQuestionPrompt = ai.definePrompt({
 
 **IMPORTANT INSTRUCTION:**
 - If the user's question is NOT about a school subject (e.g., it's about movies, music, video games, or personal questions), you MUST respond with: "That does not sound like a question about your studies. I can only answer questions about school subjects."
-- Otherwise, answer the question based on the curriculum.
+- Otherwise, provide a helpful, text-based answer to the question based on the curriculum. Do not mention images or your ability to draw.
 
 Question: {{{question}}}
 
