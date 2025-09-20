@@ -1,11 +1,12 @@
 "use server";
 
-import { explainMathProblem as explainMathProblemFlow } from "@/ai/flows/explain-math-problems";
+import { explainMathProblem as explainMathProblemFlow, type ExplainMathProblemInput } from "@/ai/flows/explain-math-problems";
 import { askCurriculumQuestion as askCurriculumQuestionFlow, type CurriculumQuestionOutput } from "@/ai/flows/curriculum-qa";
 
 export async function getAiExplanation(problem: string) {
     try {
-        const result = await explainMathProblemFlow(problem);
+        const input: ExplainMathProblemInput = { question: problem };
+        const result = await explainMathProblemFlow(input);
         return { success: true, data: result };
     } catch (error) {
         console.error(error);
@@ -15,7 +16,6 @@ export async function getAiExplanation(problem: string) {
 
 export async function askQuestion(question: string, history: string[] = []): Promise<{ success: boolean; data?: CurriculumQuestionOutput; error?: string }> {
     try {
-        // No longer filtering prompts. Directly ask the question.
         const result = await askCurriculumQuestionFlow({ question });
         return { success: true, data: result };
     } catch (error) {

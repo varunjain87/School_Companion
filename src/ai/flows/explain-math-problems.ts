@@ -11,7 +11,9 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const ExplainMathProblemInputSchema = z.string().describe('A question containing a math problem to explain (e.g., "How do I compare 3/5 and 4/7?").');
+const ExplainMathProblemInputSchema = z.object({
+  question: z.string().describe('A question containing a math problem to explain (e.g., "How do I compare 3/5 and 4/7?").')
+});
 export type ExplainMathProblemInput = z.infer<typeof ExplainMathProblemInputSchema>;
 
 const ExplainMathProblemOutputSchema = z.object({
@@ -35,7 +37,7 @@ const prompt = ai.definePrompt({
   output: {schema: ExplainMathProblemOutputSchema},
   prompt: `You are a math tutor for students in grades 5-7. Your task is to analyze the user's question to find the core math problem, provide a step-by-step explanation for solving it, and then create a 3-question practice quiz based on the problem's concepts.
 
-User's Question: {{{input}}}
+User's Question: {{{question}}}
 
 Begin by explaining the solution to the math problem step-by-step. After the explanation, provide the practice quiz.`,
 });
