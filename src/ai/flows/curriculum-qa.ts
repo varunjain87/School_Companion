@@ -86,16 +86,18 @@ const answerQuestionPrompt = ai.definePrompt({
   })},
   prompt: `You are a helpful assistant for CBSE classes 5-7.
 Answer the question based on the provided notes. Cite the note IDs where the information was found.
-If the notes do not contain the answer, respond that you cannot answer the question with the provided notes, and suggest in-scope topics.
+If the notes are empty, answer the question from your own knowledge.
 
 Question: {{{question}}}
+{{#if notes}}
 Notes:
 {{#each notes}}
   Note ID: {{{id}}}
   Content: {{{content}}}
 {{/each}}
+{{/if}}
 
-Answer:`, 
+Answer:`,
 });
 
 const curriculumQAFlow = ai.defineFlow(
